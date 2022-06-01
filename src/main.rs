@@ -1,4 +1,7 @@
 #![allow(non_snake_case)]
+
+use dioxus::core::to_owned;
+use dioxus::events::FormData;
 use dioxus::prelude::*;
 
 #[derive(PartialEq, Props)]
@@ -106,7 +109,59 @@ fn App2(cx: Scope) -> Element {
     })
 }
 
+fn AppFutures(cx: Scope) -> Element {
+    let tiempo = use_state(&cx, || 0);
+
+    use_future(&cx, (), |()| {
+        to_owned![tiempo];
+        async move {
+            loop {
+                gloo_timers::future::TimeoutFuture::new(1000).await;
+                tiempo.modify(|i| i + 1)
+            }
+        }
+    });
+
+    cx.render(rsx! {
+        p { "{tiempo}" }
+    })
+}
+
+fn AppForm(cx: Scope) -> Element {
+    let form_res = use_state(&cx, || FormData {
+        value: "".to_string(),
+        values: Default::default(),
+    });
+    
+    cx.render(rsx! {
+        h1 { "{form_res.values:?}" }
+         h1 { [
+            format_args!("{}", 
+                form_res.values
+                .get("username")
+                .unwrap_or(&" ".to_string())
+            )
+        ] }
+        form {
+            prevent_default: "onsubmit",
+            onsubmit: move |evt| {
+                form_res.set(evt.clone());
+            },
+            label { "for":"password", "Contraseña: " }
+            input { id: "password", "type":"password", name: "password" }
+            br {}
+            label { "for":"username", "Usuario: " }
+            input { id: "username", name: "username" }
+            br {}
+            button {
+                onclick: move |_| {},
+                "Submit"
+            }
+        }
+    })
+}
+
 fn main() {
     // dioxus::web::launch_with_props(App, AppProps { logged_in: true }, |config| config);
-    dioxus::web::launch(ValorControlado);
+    dioxus::web::launch(AppForm);
 }
