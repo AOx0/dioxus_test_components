@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+#![allow(dead_code)]
 
 use dioxus::core::to_owned;
 use dioxus::events::FormData;
@@ -132,11 +133,11 @@ fn AppForm(cx: Scope) -> Element {
         value: "".to_string(),
         values: Default::default(),
     });
-    
+
     cx.render(rsx! {
         h1 { "{form_res.values:?}" }
-         h1 { [
-            format_args!("{}", 
+        h1 { [
+            format_args!("{}",
                 form_res.values
                 .get("username")
                 .unwrap_or(&" ".to_string())
